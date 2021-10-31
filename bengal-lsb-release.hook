@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = lsb-release
+
+[Action]
+Description = BengalBoot official hooks
+When = PostTransaction
+Exec = /usr/bin/bengal-hooks-runner lsb-release

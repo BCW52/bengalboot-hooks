@@ -1,0 +1,66 @@
+#!/bin/bash
+
+Lsb_release() {
+    local file=/etc/lsb-release
+
+    if [ -z "$(grep "^DISTRIB_CODENAME=" $file)" ] ; then
+
+        echo "DISTRIB_CODENAME=rolling" >> $file
+    fi
+    sed -i $file \
+        -e 's|^DISTRIB_ID=.*$|DISTRIB_ID=BengalBoot|' \
+        -e 's|^DISTRIB_CODENAME=.*$|DISTRIB_CODENAME=rolling|' \
+        -e 's|^DISTRIB_DESCRIPTION=.*$|DISTRIB_DESCRIPTION=\"BengalBoot\"|'
+}
+
+Os_release() {
+    local file=/usr/lib/os-release
+    local bengalfile=/usr/lib/bengalboot-release
+
+    local home=https://bengalboot.xyz
+    local data=$(curl -Lsm 10 -o- $home)
+    local doc=$(echo "$data" | grep ">Wiki<" | sed 's|.*\(https://[^"]*\).*|\1|')
+    local support=https://forum.bengalboot.xyz
+    local bugs=https://bugs.bengalboot.xyz
+
+    [ -n "$doc" ] || doc=https://docs.bengalboot.xyz
+
+    sed -i $file \
+        -e "s|^NAME=.*$|NAME='BengalBoot'|" \
+        -e "s|^PRETTY_NAME=.*$|PRETTY_NAME='BengalBoot Beta'|" \
+        -e "s|^HOME_URL=.*$|HOME_URL='$home'|" \
+        -e "s|^DOCUMENTATION_URL=.*$|DOCUMENTATION_URL='$doc'|" \
+        -e "s|^SUPPORT_URL=.*$|SUPPORT_URL='$support'|" \
+        -e "s|^BUG_REPORT_URL=.*$|BUG_REPORT_URL='$bugs'|" \
+        -e "s|^LOGO=.*$|LOGO=bengal-tiger|" \
+        -e "s|^ID=.*$|ID=bengalboot|" \
+        -e "s|^ID_LIKE=.*$|ID_LIKE=arch|"
+
+    if [ -z "$(grep "^ID_LIKE=" $file)" ] && [ -n "$(grep "^ID=" $file)" ] ; then
+        sed -i $file -e '/^ID=/a \ID_LIKE=arch'
+    fi
+    if [ -r $bengalfile ] ; then
+        local buildid="$(grep "^VERSION=" $bengalfile | awk '{print $1}' | cut -d '=' -f 2)"
+        sed -i $file -e "s|^BUILD_ID=.*$|BUILD_ID=$buildid|"
+    fi
+}
+
+Issues() {
+    sed -i 's|Arch|BengalBoot|g' /etc/issue /usr/share/factory/etc/issue
+}
+
+Main()
+{
+    local hookname="$1"
+
+    case "$hookname" in
+        os-release)  Os_release ;;
+        lsb-release) Lsb_release ;;
+        "")          Os_release
+                     Lsb_release
+                     Issues
+                     ;;
+    esac
+}
+
+Main "$@"

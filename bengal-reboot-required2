@@ -1,0 +1,47 @@
+#!/bin/bash
+IsRunningKernel() {
+    if [ -z "$running_kernel" ] ; then
+        running_kernel=$(cat /proc/cmdline | awk '{print $1}' | sed 's|^.*/vmlinuz-\(.*\)$|\1|')
+    fi
+    test "$1" = "$running_kernel"
+}
+
+DoNotify() { /usr/bin/eos-reboot-required ; exit 0 ; }
+
+Main() {
+    local targets=$(cat)  # list of updated package names from the hook (stdin)
+    local target
+    local running_kernel=""
+
+    for target in $targets ; do
+        case "$target" in
+            linux | linux-lts | linux-zen | linux-hardened | linux-lts?? | linux-lts???)
+                # Note: only official and older LTS kernels are checked.
+                if IsRunningKernel "$target" ; then
+                    DoNotify
+                fi
+                ;;
+            nvidia)
+                if IsRunningKernel linux ; then
+                    DoNotify
+                fi
+                ;;
+            nvidia-lts)
+                if IsRunningKernel linux-lts ; then
+                    DoNotify
+                fi
+                ;;
+            btrfs-progs)
+                # Notify only if btrfs is in use
+                if [ -n "$(/usr/bin/df -hT | awk '{print $2}' | grep -w btrfs)" ] ; then
+                    DoNotify
+                fi
+                ;;
+            *)
+                DoNotify
+                ;;
+        esac
+    done
+}
+
+Main "$@"
