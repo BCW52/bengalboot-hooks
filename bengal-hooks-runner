@@ -35,7 +35,7 @@ Os_release() {
         -e "s|^LOGO=.*$|LOGO=bengal-tiger|" \
         -e "s|^ID=.*$|ID=bengalboot|" \
         -e "s|^ID_LIKE=.*$|ID_LIKE=arch|"
-        -e "s|^ANSI_COLOR=.*$|ANSI_COLOR='32;41;1m'"
+        -e "s|^ANSI_COLOR=.*$|ANSI_COLOR='32;41;1'"
 
     if [ -z "$(grep "^ID_LIKE=" $file)" ] && [ -n "$(grep "^ID=" $file)" ] ; then
         sed -i $file -e '/^ID=/a \ID_LIKE=arch'
