@@ -6,7 +6,7 @@ IsRunningKernel() {
     test "$1" = "$running_kernel"
 }
 
-DoNotify() { /usr/bin/eos-reboot-required ; exit 0 ; }
+DoNotify() { /usr/bin/bengal-reboot-required ; exit 0 ; }
 
 Main() {
     local targets=$(cat)  # list of updated package names from the hook (stdin)
