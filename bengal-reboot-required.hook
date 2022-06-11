@@ -20,4 +20,4 @@ Description = Check if user should be informed about rebooting after certain sys
 When = PostTransaction
 Depends = libnotify
 NeedsTargets
-Exec = /usr/bin/eos-reboot-required2
+Exec = /usr/bin/bengal-reboot-required2
